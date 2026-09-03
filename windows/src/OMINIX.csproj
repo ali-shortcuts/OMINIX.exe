@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>../../public/favicon.ico</ApplicationIcon>
     <AssemblyName>OMINIX</AssemblyName>
     <RootNamespace>OMINIX</RootNamespace>
     <PublishSingleFile>true</PublishSingleFile>
