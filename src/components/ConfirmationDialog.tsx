@@ -38,9 +38,20 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               </p>
             </div>
           </div>
-          <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            {pendingOperation.permissionCategory}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {pendingOperation.approvalTier === 'STRICT_CONFIRM' ? (
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                STRICT CONFIRM
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {pendingOperation.approvalTier || 'CONFIRM'}
+              </span>
+            )}
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium uppercase bg-slate-800 text-slate-300 border border-slate-700">
+              {pendingOperation.permissionCategory}
+            </span>
+          </div>
         </div>
 
         {/* Content Body */}
@@ -58,6 +69,17 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               {pendingOperation.title}
             </p>
           </div>
+
+          {pendingOperation.actionPreview && (
+            <div className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs">
+              <span className="text-emerald-400 font-semibold">+{pendingOperation.actionPreview.addedCount ?? 1} Added</span>
+              <span className="text-sky-400 font-semibold">~{pendingOperation.actionPreview.modifiedCount ?? 0} Modified</span>
+              <span className="text-rose-400 font-semibold">-{pendingOperation.actionPreview.deletedCount ?? 0} Deleted</span>
+              <span className="ml-auto text-[10px] text-slate-400 font-mono uppercase">
+                Risk: {pendingOperation.actionPreview.riskLevel}
+              </span>
+            </div>
+          )}
 
           <div className="bg-slate-950/70 border border-slate-800 rounded-lg p-3.5 space-y-2">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">

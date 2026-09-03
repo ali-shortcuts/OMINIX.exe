@@ -59,6 +59,78 @@ export interface TransactionSnapshot {
   status: 'active' | 'committed' | 'rolled-back';
 }
 
+export interface ToolContract {
+  id: string;
+  name: string;
+  description: string;
+  host: OfficeAppType | 'cross-office';
+  permission: ToolPermissionCategory;
+  scope: PermissionScope;
+  minRequirementSet: string;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  inputSchema: Record<string, string>;
+  outputSchema: Record<string, string>;
+  canBeBatched: boolean;
+  canBeRolledBack: boolean;
+  approvalTier: 'AUTO' | 'CONFIRM' | 'STRICT_CONFIRM';
+  verificationMethod: 'READ_AFTER_WRITE' | 'FORMULA_INTEGRITY' | 'DOM_STRUCTURE' | 'VISUAL_LAYOUT';
+}
+
+export interface PlanStep {
+  id: string;
+  order: number;
+  toolId: string;
+  description: string;
+  host: OfficeAppType;
+  parameters: Record<string, any>;
+  dependsOn?: string[];
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'rolled-back';
+  output?: any;
+  error?: string;
+  verificationReport?: VerificationReport;
+}
+
+export interface ExecutionPlanGraph {
+  id: string;
+  userIntent: string;
+  estimatedDurationMs: number;
+  steps: PlanStep[];
+  status: 'draft' | 'awaiting_approval' | 'executing' | 'completed' | 'failed' | 'cancelled';
+  requiresStrictConfirmation: boolean;
+  affectedDocuments: string[];
+}
+
+export interface DeltaOperation {
+  id: string;
+  timestamp: string;
+  toolId: string;
+  host: OfficeAppType;
+  targetAddress: string;
+  inverseOperation: {
+    toolId: string;
+    parameters: Record<string, any>;
+  };
+}
+
+export interface OperationJournal {
+  transactionId: string;
+  documentId: string;
+  operations: DeltaOperation[];
+  status: 'recording' | 'committed' | 'reverted';
+}
+
+export interface CrossOfficeJob {
+  id: string;
+  title: string;
+  status: 'queued' | 'running' | 'waiting_approval' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  progressPercent: number;
+  currentStepIndex: number;
+  stepsCount: number;
+  sourceDoc?: { type: OfficeAppType; name: string };
+  targetDoc?: { type: OfficeAppType; name: string };
+  cancelRequested?: boolean;
+}
+
 export interface PendingToolOperation {
   id: string;
   toolName: string;
@@ -69,10 +141,14 @@ export interface PendingToolOperation {
   summaryChanges: string[];
   parameters: any;
   requiresConfirmation: boolean;
+  approvalTier?: 'AUTO' | 'CONFIRM' | 'STRICT_CONFIRM';
   actionPreview?: {
     intent: string;
     affectedTargets: string[];
     riskLevel: 'low' | 'medium' | 'high';
+    addedCount?: number;
+    modifiedCount?: number;
+    deletedCount?: number;
   };
 }
 
