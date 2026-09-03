@@ -110,6 +110,78 @@ pause
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Method 0: Direct EXE Download from GitHub */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border border-blue-800/60 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[10px] font-bold tracking-wider uppercase">
+                    Official Release v1.0.0
+                  </span>
+                </div>
+                <h4 className="font-bold text-white text-sm mt-1">Download Native Windows Executable</h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Published and hosted on GitHub under <span className="text-blue-400 font-mono">ali-shortcuts/OMINIX.exe</span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://github.com/ali-shortcuts/OMINIX.exe/releases/latest"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md hover:shadow-blue-500/20"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download OMINIX.exe</span>
+                </a>
+                <a
+                  href="https://github.com/ali-shortcuts/OMINIX.exe"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs transition border border-slate-700"
+                  title="View on GitHub"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+              <a
+                href="https://github.com/ali-shortcuts/OMINIX.exe/releases/latest"
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 flex items-center justify-between text-slate-200 transition"
+              >
+                <div className="flex items-center gap-2">
+                  <Laptop className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <div className="font-semibold text-xs">OMINIX.exe</div>
+                    <div className="text-[10px] text-slate-400">Standalone Windows Desktop Host</div>
+                  </div>
+                </div>
+                <Download className="w-3.5 h-3.5 text-blue-400" />
+              </a>
+
+              <a
+                href="https://github.com/ali-shortcuts/OMINIX.exe/releases/latest"
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 flex items-center justify-between text-slate-200 transition"
+              >
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-indigo-400" />
+                  <div>
+                    <div className="font-semibold text-xs">OMINIX-Office-AI-Windows.zip</div>
+                    <div className="text-[10px] text-slate-400">EXE + Manifest + Batch Bundle</div>
+                  </div>
+                </div>
+                <Download className="w-3.5 h-3.5 text-indigo-400" />
+              </a>
+            </div>
+          </div>
+
           {/* Method 1: Automated Script */}
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
