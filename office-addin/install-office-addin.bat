@@ -24,6 +24,10 @@ if not exist "%TARGET_DIR%" mkdir "%TARGET_DIR%"
 echo [*] Copying manifest.xml...
 copy /y "%MANIFEST_PATH%" "%TARGET_DIR%\manifest.xml" >nul
 
+echo [*] Configuring Windows Registry for Office Developer Sideloading (Auto-Ribbon)...
+reg add "HKCU\Software\Microsoft\Office\16.0\WEF\Developer\{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /v "Id" /t REG_SZ /d "{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /f >nul
+reg add "HKCU\Software\Microsoft\Office\16.0\WEF\Developer\{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /v "Url" /t REG_SZ /d "%TARGET_DIR%\manifest.xml" /f >nul
+
 echo [*] Configuring Windows Registry for Office Trusted Catalogs...
 reg add "HKCU\Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /v "Id" /t REG_SZ /d "{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /f >nul
 reg add "HKCU\Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\{D72B380A-5DFB-4024-8F24-9DFA868A8B5E}" /v "Url" /t REG_SZ /d "%TARGET_DIR%" /f >nul
@@ -31,13 +35,13 @@ reg add "HKCU\Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\{D72B380A-5DFB-
 
 echo.
 echo ========================================================
-echo [✓] OMINIX Add-in has been successfully registered!
+echo [OK] OMINIX Add-in has been successfully registered!
 echo.
-echo  Next steps:
-echo  1. Launch OMINIX-Launcher.bat (or OMINIX.exe).
-echo  2. Open Word, Excel, or PowerPoint.
-echo  3. Go to Insert - My Add-ins - Shared Folder, or look
-echo     for the "OMINIX AI" tab in the Ribbon.
+echo  Automatic Injection Status:
+echo  1. Next time you launch Word, Excel, or PowerPoint,
+echo     Office automatically reads the Developer Sideload key.
+echo  2. The "OMINIX AI" tab appears directly in the Ribbon.
+echo  3. Click "OMINIX Panel" to open the AI Taskpane inside Office!
 echo ========================================================
 echo.
 pause
