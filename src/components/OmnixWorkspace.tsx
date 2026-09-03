@@ -109,10 +109,11 @@ export const OmnixWorkspace: React.FC<OmnixWorkspaceProps> = ({
   };
 
   const contextModeLabels: Record<ContextExtractionMode, string> = {
-    'selection': 'Selection Only',
-    'current-object': currentApp === 'excel' ? 'Active Sheet' : currentApp === 'powerpoint' ? 'Active Slide' : 'Active Paragraph',
-    'current-document': currentApp === 'excel' ? 'Full Workbook' : currentApp === 'powerpoint' ? 'Full Presentation' : 'Full Document',
-    'current-application': 'Host Metadata',
+    'selection': 'Selection Only (L1)',
+    'current-object': currentApp === 'excel' ? 'Active Sheet (L2)' : currentApp === 'powerpoint' ? 'Active Slide (L2)' : 'Active Paragraph (L2)',
+    'current-document': currentApp === 'excel' ? 'Full Workbook (L3)' : currentApp === 'powerpoint' ? 'Full Presentation (L3)' : 'Full Document (L3)',
+    'current-application': 'Host Metadata (L4)',
+    'profiled-subset': 'Compressed Profile (L5)',
     'custom': 'Custom Context',
   };
 

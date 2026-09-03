@@ -3,24 +3,61 @@ export type OfficeAppType = 'word' | 'excel' | 'powerpoint';
 export type AgentExecutionMode = 
   | 'chat'              // Conversation only
   | 'assisted'          // Proposes actions, inspects context
-  | 'agent'             // Executes authorized tools
+  | 'agent'             // Executes authorized tools with verification
   | 'safe-agent'        // Executes only pre-approved read/format tools
   | 'expert-workflow';  // Multi-step automated Office workflows
 
+export type ContextLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
 export type ContextExtractionMode = 
-  | 'selection'         // Current Selection
-  | 'current-object'    // Active Sheet / Paragraph / Slide
-  | 'current-document'  // Full Document / Workbook / Presentation
+  | 'selection'         // Level 1: Selection
+  | 'current-object'    // Level 2: Active Sheet / Paragraph / Slide
+  | 'current-document'  // Level 3/4: Full Document / Workbook / Presentation
   | 'current-application' // Host metadata
+  | 'profiled-subset'   // Level 5: Compressed statistical sample
   | 'custom';           // Explicitly attached context
 
 export type ToolPermissionCategory = 
   | 'READ' 
+  | 'FORMAT' 
   | 'WRITE' 
   | 'CREATE' 
   | 'DELETE' 
-  | 'FORMAT' 
-  | 'EXECUTE';
+  | 'EXECUTE'
+  | 'EXPORT';
+
+export type PermissionScope = 
+  | 'selected-range'
+  | 'current-object'
+  | 'current-sheet'
+  | 'current-document'
+  | 'current-workbook'
+  | 'entire-presentation';
+
+export interface VerificationCheck {
+  id: string;
+  name: string;
+  passed: boolean;
+  details: string;
+}
+
+export interface VerificationReport {
+  status: 'verified' | 'failed' | 'repaired' | 'rolled-back';
+  checks: VerificationCheck[];
+  repairedStep?: string;
+  errorMessage?: string;
+}
+
+export interface TransactionSnapshot {
+  id: string;
+  timestamp: string;
+  host: OfficeAppType;
+  description: string;
+  scope: PermissionScope;
+  preState: any;
+  postState?: any;
+  status: 'active' | 'committed' | 'rolled-back';
+}
 
 export interface PendingToolOperation {
   id: string;
@@ -28,9 +65,32 @@ export interface PendingToolOperation {
   title: string;
   host: OfficeAppType;
   permissionCategory: ToolPermissionCategory;
+  scope: PermissionScope;
   summaryChanges: string[];
   parameters: any;
   requiresConfirmation: boolean;
+  actionPreview?: {
+    intent: string;
+    affectedTargets: string[];
+    riskLevel: 'low' | 'medium' | 'high';
+  };
+}
+
+export interface OfficeCapabilityInfo {
+  host: OfficeAppType;
+  version: string;
+  build: string;
+  installationType: 'ClickToRun' | 'MSI' | 'Store' | 'Web';
+  runtimeEngine: 'WebView2' | 'EdgeHTML' | 'Trident' | 'Browser';
+  supportedRequirementSets: Record<string, string>;
+  operatingMode: 'FULL_AGENT' | 'LIMITED_AGENT' | 'COMPATIBILITY';
+}
+
+export interface DlpRuleResult {
+  hasConfidentialData: boolean;
+  detectedTypes: string[];
+  redactedCount: number;
+  policyApplied: 'ALLOW' | 'MASK' | 'BLOCK' | 'CONFIRM';
 }
 
 export interface AuditEvent {
@@ -62,15 +122,44 @@ export interface Realm {
   }>;
 }
 
-export type ProviderType = 'gemini' | 'openrouter' | 'groq' | '9router' | 'custom' | 'smart-aggregator';
+export type ProviderCategory = 'cloud' | 'gateway' | 'local';
+
+export type ModelCapability = 
+  | 'chat' 
+  | 'vision' 
+  | 'tool-calling' 
+  | 'long-context' 
+  | 'structured-output' 
+  | 'streaming';
+
+export type ProviderType = 
+  | 'gemini' 
+  | 'openrouter' 
+  | 'groq' 
+  | '9router' 
+  | 'ollama'
+  | 'opencode'
+  | 'custom' 
+  | 'smart-aggregator';
+
+export interface RegisteredModel {
+  id: string;
+  name: string;
+  providerId: ProviderType | string;
+  contextWindow: number;
+  capabilities: ModelCapability[];
+  pricingPer1kTokens?: { input: number; output: number };
+}
 
 export interface CustomProviderConfig {
   id: string;
   name: string;
+  category: ProviderCategory;
   baseUrl: string;
   apiKey: string;
   model: string;
   isActive: boolean;
+  capabilities?: ModelCapability[];
 }
 
 export interface ProviderSettings {
@@ -78,6 +167,8 @@ export interface ProviderSettings {
   smartAggregatorEnabled: boolean;
   activeAgentMode: AgentExecutionMode;
   activeContextMode: ContextExtractionMode;
+  contextLevel: ContextLevel;
+  dlpPolicy: 'ALLOW' | 'MASK' | 'BLOCK' | 'CONFIRM';
   gemini: {
     apiKey: string;
     model: string;
@@ -95,11 +186,16 @@ export interface ProviderSettings {
     apiKey: string;
     model: string;
   };
+  ollama: {
+    baseUrl: string;
+    model: string;
+  };
   customProviders: CustomProviderConfig[];
   activeCustomProviderId?: string;
   priorityOrder: ProviderType[];
   permissionPolicy: {
     autoApproveRead: boolean;
+    autoApproveFormat: boolean;
     autoApproveWrite: boolean;
     alwaysAskDelete: boolean;
     alwaysAskMultiObject: boolean;

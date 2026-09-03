@@ -5,6 +5,8 @@ export const DEFAULT_SETTINGS: ProviderSettings = {
   smartAggregatorEnabled: true,
   activeAgentMode: 'assisted',
   activeContextMode: 'selection',
+  contextLevel: 1,
+  dlpPolicy: 'MASK',
   gemini: {
     apiKey: '',
     model: 'gemini-2.5-flash',
@@ -22,10 +24,15 @@ export const DEFAULT_SETTINGS: ProviderSettings = {
     apiKey: '',
     model: 'claude-3-5-sonnet',
   },
+  ollama: {
+    baseUrl: 'http://localhost:11434/v1',
+    model: 'llama3:latest',
+  },
   customProviders: [
     {
       id: 'custom-ollama',
       name: 'Local Ollama (localhost:11434)',
+      category: 'local',
       baseUrl: 'http://localhost:11434/v1',
       apiKey: '',
       model: 'llama3:latest',
@@ -34,6 +41,7 @@ export const DEFAULT_SETTINGS: ProviderSettings = {
     {
       id: 'custom-lmstudio',
       name: 'LM Studio (localhost:1234)',
+      category: 'local',
       baseUrl: 'http://localhost:1234/v1',
       apiKey: '',
       model: 'local-model',
@@ -42,6 +50,7 @@ export const DEFAULT_SETTINGS: ProviderSettings = {
     {
       id: 'custom-deepseek',
       name: 'DeepSeek API',
+      category: 'cloud',
       baseUrl: 'https://api.deepseek.com/v1',
       apiKey: '',
       model: 'deepseek-chat',
@@ -51,6 +60,7 @@ export const DEFAULT_SETTINGS: ProviderSettings = {
   priorityOrder: ['gemini', 'openrouter', 'groq', 'custom', '9router'],
   permissionPolicy: {
     autoApproveRead: true,
+    autoApproveFormat: true,
     autoApproveWrite: true,
     alwaysAskDelete: true,
     alwaysAskMultiObject: true

@@ -46,8 +46,13 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         {/* Content Body */}
         <div className="p-5 space-y-4">
           <div>
-            <div className="text-xs text-slate-400 font-mono mb-1">
-              Tool: <span className="text-indigo-300 font-semibold">{pendingOperation.toolName}</span> ({pendingOperation.host.toUpperCase()})
+            <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mb-1">
+              <span>Tool: <span className="text-indigo-300 font-semibold">{pendingOperation.toolName}</span> ({pendingOperation.host.toUpperCase()})</span>
+              {pendingOperation.scope && (
+                <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[10px]">
+                  Scope: {pendingOperation.scope}
+                </span>
+              )}
             </div>
             <p className="text-sm font-medium text-slate-200">
               {pendingOperation.title}

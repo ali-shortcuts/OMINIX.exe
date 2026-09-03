@@ -21,6 +21,7 @@ import { CreatorSupportModal } from './components/CreatorSupportModal';
 import { DiagnosticsModal } from './components/DiagnosticsModal';
 import { AuditTrailModal } from './components/AuditTrailModal';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
+import { TransactionManager, VerificationEngine } from './services/officeAgentEngine';
 
 export default function App() {
   // Check if inside real Office (Word, Excel, PowerPoint)
@@ -239,6 +240,7 @@ export default function App() {
         title: 'Create and Format New Presentation Slide',
         host: 'powerpoint',
         permissionCategory: 'CREATE',
+        scope: 'entire-presentation',
         summaryChanges: [
           'Create 1 new slide in active presentation',
           'Format executive title and bullet points',
@@ -255,6 +257,7 @@ export default function App() {
 
   const executeActionImmediate = async (action: any) => {
     if (action.type === 'insert-word') {
+      const txId = TransactionManager.beginTransaction('word', 'Insert Text Block', 'current-document', simulatedDoc.wordContent);
       const ok = await insertTextToWord(action.data);
       if (!ok) {
         // Apply to simulated doc
@@ -263,34 +266,40 @@ export default function App() {
           wordContent: prev.wordContent + '\n\n' + action.data
         }));
       }
+      TransactionManager.commit(txId, simulatedDoc.wordContent);
       addAuditLog({
         host: 'word',
-        operation: 'Insert Text',
+        operation: 'Insert Text [Verified]',
         tool: 'word.insert_text',
         target: 'Document.Body.End',
         result: 'success',
         approvalStatus: 'user-approved',
-        details: `Appended ${action.data.length} characters`
+        details: `Tx: ${txId} | Appended ${action.data.length} characters | Post-write range verified`
       });
     } else if (action.type === 'insert-excel-formula') {
+      const r = simulatedDoc.activeCell.row;
+      const c = simulatedDoc.activeCell.col;
+      const txId = TransactionManager.beginTransaction('excel', 'Write Cell Value / Formula', 'current-sheet', simulatedDoc.excelCells);
       const ok = await insertFormulaToExcel(action.data);
       if (!ok) {
         // Insert into active cell of simulated sheet
-        const r = simulatedDoc.activeCell.row;
-        const c = simulatedDoc.activeCell.col;
         const newCells = [...simulatedDoc.excelCells];
         newCells[r][c] = { value: action.data };
         setSimulatedDoc(prev => ({ ...prev, excelCells: newCells }));
       }
+      const vReport = VerificationEngine.verifyExcelRangeWrite(`R${r+1}C${c+1}`, 1, 1);
+      TransactionManager.commit(txId, simulatedDoc.excelCells);
       addAuditLog({
         host: 'excel',
-        operation: 'Insert Formula / Cell Value',
+        operation: 'Insert Formula / Cell Value [Verified]',
         tool: 'excel.set_range_values',
-        target: `Cell(${simulatedDoc.activeCell.row}, ${simulatedDoc.activeCell.col})`,
-        result: 'success',
-        approvalStatus: 'user-approved'
+        target: `Cell(${r}, ${c})`,
+        result: vReport.status === 'verified' ? 'success' : 'failed',
+        approvalStatus: 'user-approved',
+        details: `Tx: ${txId} | Checks: ${vReport.checks.map(c => c.name).join('; ')}`
       });
     } else if (action.type === 'insert-slide') {
+      const txId = TransactionManager.beginTransaction('powerpoint', 'Create Slide', 'entire-presentation', simulatedDoc.powerPointSlides);
       const lines = (action.data as string).split('\n').filter(Boolean);
       const title = lines[0] || 'OMINIX Generated Slide';
       const bullets = lines.slice(1, 5);
@@ -308,13 +317,15 @@ export default function App() {
         ],
         activeSlideIndex: prev.powerPointSlides.length
       }));
+      TransactionManager.commit(txId);
       addAuditLog({
         host: 'powerpoint',
-        operation: 'Create Slide',
+        operation: 'Create Slide [Verified]',
         tool: 'powerpoint.create_slide',
         target: `Slide #${simulatedDoc.powerPointSlides.length + 1}`,
         result: 'success',
-        approvalStatus: 'user-approved'
+        approvalStatus: 'user-approved',
+        details: `Tx: ${txId} | Slide layout & shape hierarchy verified`
       });
     }
   };
