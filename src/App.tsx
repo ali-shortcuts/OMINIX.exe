@@ -304,6 +304,7 @@ export default function App() {
       const title = lines[0] || 'OMINIX Generated Slide';
       const bullets = lines.slice(1, 5);
       await insertSlideToPowerPoint(title, bullets);
+      const vReport = VerificationEngine.verifyPowerPointSlide(title, bullets);
       setSimulatedDoc(prev => ({
         ...prev,
         powerPointSlides: [
@@ -320,12 +321,12 @@ export default function App() {
       TransactionManager.commit(txId);
       addAuditLog({
         host: 'powerpoint',
-        operation: 'Create Slide [Verified]',
+        operation: 'Create Slide [Visual Verified]',
         tool: 'powerpoint.create_slide',
         target: `Slide #${simulatedDoc.powerPointSlides.length + 1}`,
-        result: 'success',
+        result: vReport.status === 'verified' ? 'success' : 'failed',
         approvalStatus: 'user-approved',
-        details: `Tx: ${txId} | Slide layout & shape hierarchy verified`
+        details: `Tx: ${txId} | BoundingBox: ${vReport.checks.find(c => c.id === 'bounding-box-collision')?.details || 'Pass'}`
       });
     }
   };
