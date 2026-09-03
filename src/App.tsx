@@ -10,7 +10,7 @@ import {
 } from './types';
 import { DEFAULT_REALMS } from './data/realms';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, sendChatMessage } from './services/aiService';
-import { isRunningInOffice, getOfficeHostApp, insertTextToWord, insertFormulaToExcel, insertSlideToPowerPoint } from './services/officeService';
+import { isRunningInOffice, getOfficeHostApp, initializeOffice, insertTextToWord, insertFormulaToExcel, insertSlideToPowerPoint } from './services/officeService';
 import { OfficeRibbon } from './components/OfficeRibbon';
 import { DocumentViewer } from './components/DocumentViewer';
 import { OmnixWorkspace } from './components/OmnixWorkspace';
@@ -25,11 +25,21 @@ import { TransactionManager, VerificationEngine } from './services/officeAgentEn
 
 export default function App() {
   // Check if inside real Office (Word, Excel, PowerPoint)
-  const isInsideRealOffice = isRunningInOffice();
-  const detectedHost = getOfficeHostApp();
-  const [currentApp, setCurrentApp] = useState<OfficeAppType>(
-    detectedHost === 'standalone' ? 'word' : detectedHost
-  );
+  const [isInsideRealOffice, setIsInsideRealOffice] = useState<boolean>(isRunningInOffice());
+  const [currentApp, setCurrentApp] = useState<OfficeAppType>(() => {
+    const host = getOfficeHostApp();
+    return host === 'standalone' ? 'word' : host;
+  });
+
+  // Handle Office.onReady lifecycle asynchronously
+  useEffect(() => {
+    initializeOffice((host, realOffice) => {
+      setIsInsideRealOffice(realOffice);
+      if (host !== 'standalone') {
+        setCurrentApp(host);
+      }
+    });
+  }, []);
 
   // Application Settings & Active Persona
   const [settings, setSettings] = useState<ProviderSettings>(loadSettings);

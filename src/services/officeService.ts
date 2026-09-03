@@ -15,6 +15,34 @@ export const isRunningInOffice = (): boolean => {
   return typeof window !== 'undefined' && !!window.Office && !!window.Office.context;
 };
 
+export const initializeOffice = (onReadyCallback: (host: 'word' | 'excel' | 'powerpoint' | 'standalone', isRealOffice: boolean) => void) => {
+  if (typeof window === 'undefined') return;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const appParam = urlParams.get('app');
+  if (appParam === 'word' || appParam === 'excel' || appParam === 'powerpoint') {
+    onReadyCallback(appParam, true);
+  }
+
+  if (window.Office && typeof window.Office.onReady === 'function') {
+    window.Office.onReady((info: any) => {
+      if (info && info.host) {
+        const hostStr = String(info.host).toLowerCase();
+        let detected: 'word' | 'excel' | 'powerpoint' | 'standalone' = 'standalone';
+        if (hostStr.includes('word')) detected = 'word';
+        else if (hostStr.includes('excel')) detected = 'excel';
+        else if (hostStr.includes('powerpoint')) detected = 'powerpoint';
+        
+        onReadyCallback(detected, true);
+      } else {
+        onReadyCallback(getOfficeHostApp(), isRunningInOffice());
+      }
+    });
+  } else {
+    onReadyCallback(getOfficeHostApp(), isRunningInOffice());
+  }
+};
+
 export const getOfficeHostApp = (): 'word' | 'excel' | 'powerpoint' | 'standalone' => {
   if (typeof window === 'undefined') return 'standalone';
   
