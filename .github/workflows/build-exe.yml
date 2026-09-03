@@ -21,7 +21,9 @@ jobs:
           node-version: 20
 
       - name: Install Node dependencies
-        run: npm install
+        run: |
+          npm install --include=optional
+          npm install @rollup/rollup-win32-x64-msvc@4.63.1 @esbuild/win32-x64@0.25.0 --no-save || true
 
       - name: Build Web Frontend & Server Bundle
         run: npm run build
