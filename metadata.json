@@ -1,0 +1,8 @@
+{
+  "name": "OMINIX - Office AI Platform",
+  "description": "Local AI integration platform for Microsoft Office (Excel, Word, PowerPoint) featuring multi-provider routing, intelligent agent workflows, and native Ribbon/Taskpane integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

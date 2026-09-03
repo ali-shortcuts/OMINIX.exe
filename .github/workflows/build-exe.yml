@@ -1,0 +1,78 @@
+name: Build OMINIX.exe & Release
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build Web Frontend & Server Bundle
+        run: npm run build
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build OMINIX.exe (Windows Native Desktop Host)
+        run: |
+          dotnet publish windows/src/OMINIX.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/
+
+      - name: Package Office Add-in & Executable
+        run: |
+          mkdir dist-release
+          copy publish\OMINIX.exe dist-release\OMINIX.exe
+          copy office-addin\manifest.xml dist-release\manifest.xml
+          copy office-addin\install-office-addin.bat dist-release\install-office-addin.bat
+          Compress-Archive -Path dist-release\* -DestinationPath OMINIX-Office-AI-Windows.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OMINIX-Windows-Release
+          path: |
+            dist-release/OMINIX.exe
+            OMINIX-Office-AI-Windows.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0-${{ github.run_number }}
+          name: OMINIX Office AI v1.0.0 (Windows Executable & Office Add-in)
+          body: |
+            # OMINIX Office AI v1.0.0
+            Official Microsoft Office (Word, Excel, PowerPoint) AI Add-in and Desktop Engine.
+            **Developed by Mr Ali (@ali-shortcuts)**
+
+            ### Included Files:
+            - `OMINIX.exe`: Native Windows Desktop launcher and Office Add-in manager.
+            - `OMINIX-Office-AI-Windows.zip`: Complete bundle including manifest.xml, install scripts, and desktop binaries.
+
+            ### Instructions:
+            1. Download `OMINIX.exe` or `OMINIX-Office-AI-Windows.zip`.
+            2. Run `OMINIX.exe` to register the Add-in and launch the AI Bridge.
+            3. Open Microsoft Word, Excel, or PowerPoint to see the **OMINIX** ribbon tab!
+          files: |
+            dist-release/OMINIX.exe
+            OMINIX-Office-AI-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
